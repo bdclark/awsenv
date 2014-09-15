@@ -12,8 +12,8 @@ The following assumes BASH. Copy the script somewhere and create a function in
 ```
 $ wget https://raw.githubusercontent.com/bdclark/awsenv/master/awsenv -O ~/bin/awsenv
 $ chmod +x ~/bin/awsenv
-$ echo 'setaws() { [[ $# -eq 1 ]] && eval "$(~/bin/awsenv -p $1)"; [[ $# -eq 2 ]] && eval "$(~/bin/awsenv -p $1 -c $2)"; }' >> ~/.bashrc
-$ echo 'unsetaws() { eval "$(~/bin/awsenv --unset)"; }'  >> ~/.bashrc
+$ echo 'setaws() { [[ $# -gt 0 ]] && eval "$(~/bin/awsenv $@)"; }' >> ~/.bashrc
+$ echo 'unsetaws() { eval "$(~/bin/awsenv unset)"; }'  >> ~/.bashrc
 ```
 You will need to restart your shell or re-source your .bashrc.
 
