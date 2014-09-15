@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import ConfigParser
+import os
+import sys
+
+# Track all ENV variables that we may set so we know what to unset later"
+aws_dict = {
+    'AWS_ACCESS_KEY_ID': 'aws_access_key_id',
+    'AWS_SECRET_ACCESS_KEY': 'aws_secret_access_key',
+    'REGION': 'region',
+    'AWS_SSH_KEY_ID': 'aws_ssh_key_id',
+    'AWS_SSH_KEY_PATH': 'aws_ssh_key_path',
+    'AWS_ACCESS_KEY': 'aws_access_key_id',
+    'AWS_SECRET_KEY': 'aws_secret_access_key',
+    'AWS_VAGRANT_SUBNET_ID': 'aws_vagrant_subnet_id',
+    'AWS_VAGRANT_SECURITY_GROUP': 'aws_vagrant_security_group',
+}
+
+
+def get_option(config, section, option):
+    """Return value of ini option in section; empty string if not found"""
+    try:
+        return config.get(section, option)
+    except ConfigParser.NoOptionError:
+        return ''
+
+
+def show_env(config):
+    """Print AWS-related environment vars, and which profile(s) they match"""
+    print()
+    print('Current AWS Environment Variables:')
+    print()
+    for env_setting, ini_opt in aws_dict.items():
+        ini_value = os.environ.get(env_setting)
+        if ini_value is None:
+            print(env_setting, "not set")
+        else:
+            match_sections = []
+            for section in config.sections():
+                if get_option(config, section, ini_opt) == ini_value:
+                    match_sections.append(section.replace('profile ', ''))
+            if len(match_sections):
+                print(env_setting, "matches", match_sections)
+
+
+def unset_values():
+    """return string representation of command to unset environment vars"""
+    return "unset {0}; ".format(' '.join(aws_dict.keys()))
+
+profile = ''
+config_path = ''
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'unset':
+        print(unset_values())
+        exit(0)
+    else:
+        profile = sys.argv[1]
+if len(sys.argv) > 2:
+    config_path = sys.argv[2]
+
+if not config_path:
+    if os.environ.get('AWS_CONFIG_FILE'):
+        config_path = os.environ.get('AWS_CONFIG_FILE')
+    else:
+        config_path = os.path.expanduser('~/.aws/config')
+
+if not os.path.isfile(config_path):
+    msg = "Error: AWS config file '{0}' not found".format(config_path)
+    print(msg, file=sys.stderr)
+    exit(1)
+
+config = ConfigParser.ConfigParser()
+config.read(config_path)
+
+if not profile:
+    show_env(config)
+    exit(0)
+elif profile and profile != 'default':
+    profile = 'profile ' + profile
+
+if not config.has_section(profile):
+    msg = "Error: section '{0}' not found in config file".format(profile)
+    print(msg, file=sys.stderr)
+    exit(1)
+
+export_output = ''
+export_count = 0
+for env_setting, ini_opt in aws_dict.items():
+    value = get_option(config, profile, ini_opt)
+    if len(value):
+        export_count += 1
+        export_output += "{0}={1} ".format(env_setting, value)
+
+print(unset_values())
+if export_count > 0:
+    print('export ', export_output)
