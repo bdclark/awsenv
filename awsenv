@@ -6,6 +6,7 @@ import os
 import sys
 
 # Track all ENV variables that we may set so we know what to unset later"
+# Key is environment variable name, value is ini setting from aws config
 aws_dict = {
     'AWS_ACCESS_KEY_ID': 'aws_access_key_id',
     'AWS_SECRET_ACCESS_KEY': 'aws_secret_access_key',
@@ -49,50 +50,60 @@ def unset_values():
     """return string representation of command to unset environment vars"""
     return "unset {0}; ".format(' '.join(aws_dict.keys()))
 
+
+def exit_out(message, error=False):
+    out = sys.stderr if error else sys.stdout
+    print(message, file=out)
+    exit(1 if error else 0)
+
+
 profile = ''
-config_path = ''
+config_files = []
 if len(sys.argv) > 1:
-    if sys.argv[1] == 'unset':
-        print(unset_values())
-        exit(0)
+    if sys.argv[1] == '--unset':
+        exit_out(unset_values())
     else:
         profile = sys.argv[1]
-if len(sys.argv) > 2:
-    config_path = sys.argv[2]
 
-if not config_path:
-    if os.environ.get('AWS_CONFIG_FILE'):
-        config_path = os.environ.get('AWS_CONFIG_FILE')
+if os.environ.get('AWS_CONFIG_FILE'):
+    config_file = os.path.expanduser(os.environ.get('AWS_CONFIG_FILE'))
+    if os.path.isfile(config_file):
+        config_files.append(config_file)
     else:
-        config_path = os.path.expanduser('~/.aws/config')
+        exit_out("AWS_CONFIG_FILE '{0}' not found!".format(config_file), True)
+else:
+    for f in ['~/.aws/config', '~/.aws/credentials']:
+        if os.path.isfile(os.path.expanduser(f)):
+            config_files.append(os.path.expanduser(f))
 
-if not os.path.isfile(config_path):
-    msg = "Error: AWS config file '{0}' not found".format(config_path)
-    print(msg, file=sys.stderr)
-    exit(1)
+if not config_files:
+    exit_out("Error: no valid AWS config file(s) found", True)
 
 config = ConfigParser.ConfigParser()
-config.read(config_path)
+config.read(config_files)
 
 if not profile:
     show_env(config)
     exit(0)
-elif profile and profile != 'default':
-    profile = 'profile ' + profile
 
-if not config.has_section(profile):
-    msg = "Error: section '{0}' not found in config file".format(profile)
-    print(msg, file=sys.stderr)
-    exit(1)
-
-export_output = ''
-export_count = 0
-for env_setting, ini_opt in aws_dict.items():
-    value = get_option(config, profile, ini_opt)
-    if len(value):
-        export_count += 1
-        export_output += "{0}={1} ".format(env_setting, value)
+settings = {}
+if config.has_section('profile ' + profile) or config.has_section(profile):
+    for env_setting, ini_opt in aws_dict.items():
+        if profile != 'default':
+            # Profiles in ~/.aws/config begin with "profile ", except default
+            if config.has_section('profile ' + profile):
+                value = get_option(config, 'profile ' + profile, ini_opt)
+                if value:
+                    settings[env_setting] = value
+        if config.has_section(profile):
+            value = get_option(config, profile, ini_opt)
+            if value:
+                settings[env_setting] = value
+else:
+    exit_out("Error: profile {0} not found.".format(profile), True)
 
 print(unset_values())
-if export_count > 0:
-    print('export ', export_output)
+if settings:
+    output = 'export '
+    output += ' '.join("{0}={1}".format(k, v) for (k, v) in settings.items())
+    print(output)
