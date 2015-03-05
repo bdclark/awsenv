@@ -39,7 +39,7 @@ Current AWS Environment Variables:
 
 AWS_SECRET_KEY matches ['myprofile']
 AWS_SSH_KEY_PATH not set
-REGION matches ['myprofile', 'myotherprofile']
+AWS_DEFAULT_REGION matches ['myprofile', 'myotherprofile']
 AWS_ACCESS_KEY matches ['myprofile']
 AWS_SECRET_ACCESS_KEY matches ['myprofile']
 AWS_ACCESS_KEY_ID matches ['myprofile']
@@ -61,9 +61,16 @@ extra settings to my `~/.aws/config` file and to this script to
 make it easier to work with other tools such as Vagrant, Chef, Test-Kitchen, etc.
 The aws-cli program doesn't seem to mind the extra settings in the config file.
 
-Also, the script duplicates `AWS_ACCESS_KEY_ID` to `AWS_ACCESS_KEY` and
-`AWS_SECRET_ACCESS_KEY` to `AWS_SECRET_KEY` to make it more compatible with
-some tools.
+##Mappings
+~/.aws/config,  ~/.aws/credentials | Environment Variables
+---------------------------|----------------
+aws_access_key_id          | AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY
+aws_secret_access_key      | AWS_SECRET_ACCESS_KEY, AWS_SECRET_KEY
+region                     | AWS_DEFAULT_REGION
+aws_ssh_key_id             | AWS_SSH_KEY_ID
+aws_ssh_key_path           | AWS_SSH_KEY_PATH
+aws_vagrant_subnet_id      | AWS_VAGRANT_SUBNET_ID
+aws_vagrant_security_group | AWS_VAGRANT_SECURITY_GROUP
 
 ##License
 ```

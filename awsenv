@@ -10,7 +10,7 @@ import sys
 aws_dict = {
     'AWS_ACCESS_KEY_ID': 'aws_access_key_id',
     'AWS_SECRET_ACCESS_KEY': 'aws_secret_access_key',
-    'REGION': 'region',
+    'AWS_DEFAULT_REGION': 'region',
     'AWS_SSH_KEY_ID': 'aws_ssh_key_id',
     'AWS_SSH_KEY_PATH': 'aws_ssh_key_path',
     'AWS_ACCESS_KEY': 'aws_access_key_id',
