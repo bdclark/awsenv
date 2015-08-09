@@ -67,19 +67,11 @@ if len(sys.argv) > 1:
         profile = sys.argv[1]
 
 if os.environ.get('AWS_CONFIG_FILE'):
-    config_file = os.path.expanduser(os.environ.get('AWS_CONFIG_FILE'))
-    if os.path.isfile(config_file):
-        config_files.append(config_file)
-    else:
-        exit_out("AWS_CONFIG_FILE '{0}' not found!".format(config_file), True)
+    config_files.append(os.path.expanduser(os.environ.get('AWS_CONFIG_FILE')))
 else:
-    config_file = os.path.expanduser('~/.aws/config')
-    config_files.append(config_file)
+    config_files.append(os.path.expanduser('~/.aws/config'))
 
-config_file = os.path.expanduser('~/.aws/credentials')
-
-if os.path.isfile(config_file):
-    config_files.append(config_file)
+config_files.append(os.path.expanduser('~/.aws/credentials'))
 
 if not config_files:
     exit_out("Error: no valid AWS config file(s) found", True)
