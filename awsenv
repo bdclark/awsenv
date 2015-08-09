@@ -59,6 +59,7 @@ def exit_out(message, error=False):
 
 profile = ''
 config_files = []
+
 if len(sys.argv) > 1:
     if sys.argv[1] == '--unset':
         exit_out(unset_values())
@@ -72,9 +73,13 @@ if os.environ.get('AWS_CONFIG_FILE'):
     else:
         exit_out("AWS_CONFIG_FILE '{0}' not found!".format(config_file), True)
 else:
-    for f in ['~/.aws/config', '~/.aws/credentials']:
-        if os.path.isfile(os.path.expanduser(f)):
-            config_files.append(os.path.expanduser(f))
+    config_file = os.path.expanduser('~/.aws/config')
+    config_files.append(config_file)
+
+config_file = os.path.expanduser('~/.aws/credentials')
+
+if os.path.isfile(config_file):
+    config_files.append(config_file)
 
 if not config_files:
     exit_out("Error: no valid AWS config file(s) found", True)
