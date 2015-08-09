@@ -1,11 +1,11 @@
-#awsenv
+# awsenv
 Simple python script to simplify switching AWS related environment variables
 between multiple profiles. Parses aws-cli config file and maps related settings
 to environment variables for use with other software (e.g. Vagrant, kitchen-ec2,
 etc.).
 
 
-##Installation
+## Installation
 The following assumes BASH. Copy the script somewhere in your path, then create a
 function in .bashrc, .bash_profile, etc.:
 
@@ -18,10 +18,11 @@ You will need to restart your shell or re-source your .bashrc.
 
 Make sure you have an aws config file. See the
 [AWS Command Line Interface](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html)
-guide for details. The script will look for the file in `ENV['AWS_CONFIG_FILE']`
-if set, otherwise it looks for `~/.aws/config` and `~/.aws/credentials`.
+guide for details. The script will attempt to read from `~/.aws/credentials` and
+`~/.aws/config`. If the `AWS_CONFIG_FILE` environment variable is set, it will
+read from the file specified there instead of `~/.aws/config`.
 
-##Usage
+## Usage
 To set a particular profile, simply call the `setaws` function configured
 earlier:
 ```
@@ -54,14 +55,14 @@ To unset your AWS environment variables in the current session, call the
 $ setaws --unset
 ```
 
-##Additional
+## Additional
 You'll notice in the example above some additional settings / environment
 variables that don't exactly jive with aws-cli documentation.  I've added a few
 extra settings to my `~/.aws/config` file and to this script to
 make it easier to work with other tools such as Vagrant, Chef, Test-Kitchen, etc.
 The aws-cli program doesn't seem to mind the extra settings in the config file.
 
-##Mappings
+## Mappings
 ~/.aws/config,  ~/.aws/credentials | Environment Variables
 ---------------------------|----------------
 aws_access_key_id          | AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY
@@ -72,7 +73,7 @@ aws_ssh_key_path           | AWS_SSH_KEY_PATH
 aws_vagrant_subnet_id      | AWS_VAGRANT_SUBNET_ID
 aws_vagrant_security_group | AWS_VAGRANT_SECURITY_GROUP
 
-##License
+## License
 ```
 Copyright © 2014 Brian Clark <brian@clark.zone>
 This work is free. You can redistribute it and/or modify it under the
