@@ -96,6 +96,8 @@ if config.has_section('profile ' + profile) or config.has_section(profile):
             value = get_option(config, profile, ini_opt)
             if value:
                 settings[env_setting] = value
+            settings['AWS_PROFILE'] = profile
+
 else:
     exit_out("Error: profile {0} not found.".format(profile), True)
 
